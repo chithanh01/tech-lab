@@ -1,0 +1,20 @@
+Command to run:
+aws ec2 run-instances \
+    --image-id <AMI_ID> \
+    --instance-type <INSTANCE_TYPE> \
+    --security-group-ids <SECURITY_GROUP_ID> \
+    --subnet-id subnet-00141605612999d66 \
+    --count 1 \
+    --associate-public-ip-address \
+    --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=<EC2-NAME>}]'
+
+
+Ví dụ:
+aws ec2 run-instances \
+    --image-id ami-0ebfd941bbafe70c6 \
+    --instance-type t2.micro \
+    --security-group-ids sg-0195232598e37408a \
+    --subnet-id subnet-00141605612999d66 \
+    --count 1 \
+    --associate-public-ip-address \
+    --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=aws-ec2-cli}]'
