@@ -1,0 +1,61 @@
+stages:
+  - build
+  - test
+  - deploy
+
+# Định nghĩa Image dùng để build và test
+image: node:14
+
+# Cài đặt các biến môi trường chung
+variables:
+  NODE_ENV: 'production'
+  AWS_REGION: 'us-east-1'
+  EB_ENV_NAME: 'my-app-environment'
+  EB_APP_NAME: 'my-app'
+
+# Caching node_modules để tăng tốc quá trình build
+cache:
+  paths:
+    - node_modules/
+
+# Giai đoạn Build
+build-job:
+  stage: build
+  script:
+    - echo "Building the project..."
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 week
+
+# Giai đoạn Test
+test-job:
+  stage: test
+  script:
+    - echo "Running tests..."
+    - npm install
+    - npm run test
+  only:
+    - merge_requests
+
+# Giai đoạn Deploy
+deploy-job:
+  stage: deploy
+  image: python:3.8 # AWS Elastic Beanstalk CLI yêu cầu Python
+  before_script:
+    # Cài đặt AWS CLI và Elastic Beanstalk CLI
+    - pip install --upgrade pip
+    - pip install awsebcli
+    # Cấu hình AWS CLI
+    - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+    - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+    - aws configure set default.region $AWS_REGION
+  script:
+    - echo "Deploying to AWS Elastic Beanstalk..."
+    - eb init $EB_APP_NAME --region $AWS_REGION
+    - eb use $EB_ENV_NAME
+    - eb deploy
+  only:
+    - master
